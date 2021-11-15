@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 
 const val EXTRA_SHOW_ANSWER = "CheatActivity"
@@ -32,6 +33,12 @@ class MainActivity : AppCompatActivity() {
 
    private val quizViewModel by lazy { ViewModelProvider(this).get(QuizViewModel::class.java) }
 
+    private val getCheatingResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+        if (it.resultCode == Activity.RESULT_OK) {
+            quizViewModel.cheatingCount--
+        }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +83,9 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this,CheatActivity::class.java)
             intent.putExtra(EXTRA_SHOW_ANSWER,quizViewModel.currentQuestionAnswer)
             intent.putExtra(EXTRA_SHOW_QUESTION,quizViewModel.currentQuestion)
-            startActivityForResult(intent, REQUEST_CODE_CHEAT)
+
+            getCheatingResult.launch(intent)
+//            startActivityForResult(intent, REQUEST_CODE_CHEAT)
             updateButtons()
         }
 
@@ -85,7 +94,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        Log.d(TAG," a value been saved")
         outState.putInt(KEY_INDEX,quizViewModel.currentIndex)
         outState.putInt(KEY_CHEATING_COUNT,quizViewModel.cheatingCount)
     }
@@ -94,6 +102,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion() {
         questionTv.setText(quizViewModel.currentQuestion)
         writtenBy.text = quizViewModel.currentQuestionWriter
+
         if (quizViewModel.cheatingCount < 2 ){
             falseButton.isEnabled = false
             trueButton.isEnabled = false
@@ -128,15 +137,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//
+//        if (resultCode != Activity.RESULT_OK) {
+//            return
+//        }
+//
+//        if (requestCode == REQUEST_CODE_CHEAT) {
+//            quizViewModel.cheatingCount--
+//
+//        }
+//    }
 
-        if (resultCode != Activity.RESULT_OK){
-            return
-        }
-
-        if (requestCode == REQUEST_CODE_CHEAT){
-            quizViewModel.cheatingCount--
-        }
-    }
 }
